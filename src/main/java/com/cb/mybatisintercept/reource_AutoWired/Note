@@ -1,0 +1,10 @@
+@Resource
+    JDK
+    方法、字段注入
+
+
+@AutoWired
+    Spring    , 耦合   后面如果换容器则 代价很大
+    构造器、方法、字段、方法参数 注入
+
+    showdoc 有详细介绍

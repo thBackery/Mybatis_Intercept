@@ -1,0 +1,10 @@
+Filter  :
+    随WEB容器启动而启动，随WEB容器停止而停止， 可以对 请求参数 和请求结果进行处理
+    方式：实现 Filter 接口  ， 重写  init()  doFilter()  destroy()
+    生效配置： web.xml 或  创建一个配置类: FilterConfig
+
+
+Interceptor :
+    Spring Boot 自带的拦截器， AOP实现， 可以对某一个方法 请求前的请求参数进行操作  请求后资源释放  ModelAndView 进行操作
+    方式：实现 HandlerInterceptor 接口，  重写 preHandler(), handler
+    生效配置：创建一个配置类:

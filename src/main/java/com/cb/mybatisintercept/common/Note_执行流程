@@ -1,0 +1,53 @@
+加载 配置文件，为后续数据库操作做准备
+1、读取配置文件
+    读取mybatis配置文件
+    读取*Mapper.xml ，形成映射关系：一条SQL 对应一个 MapperState
+    *Mapper.xml 中的 命名空间的作用：
+        1、接口绑定，  知道MapperState 是哪个Mapper.xml 里面的
+        2、根据Mapper文件区分开不同文件的接口
+
+
+2、创建SqlSessionFactory
+    根据SqlSessionFactory 和 读取的 mybatis_config.xml  得到SqlSessionFactory：
+        InputStream inputStream = Application.class.getClassLoader().getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactory sqlSessionFactory = new SqlSeesionFactoryBuilder().build(inputStream);
+    SqlSessionFactory 是单例的 全局唯一
+
+
+数据库操作开始
+3、来了一个数据库的请求， 创建SqlSession
+    SqlSessionFactory.openSqlSession();
+
+4、new 一个 Executor
+    mybatis 的协调器， 协调ParameterHandler 、 StatementHandler 、ResultHandler 对SQL 参数入参、SQL拼接、SQL执行、结果转换
+    生成SqlSession 入口：
+        org.apache.ibatis.session.defaults
+        DefaultSqlSessionFactory#openSession  ->  DefaultSqlSessionFactory#openSessionFromDataSource
+        openSessionFromDataSource 方法流程：
+            // 根据配置信息获取环境信息
+            Environment environment = this.configuration.getEnvironment();
+            // 根据环境信息获取事务工厂
+            TransactionFactory transactionFactory = this.getTransactionFactoryFromEnvironment(environment);
+            // 根据事务工厂 、 等级 、 是否自动提交 获取事务
+            tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
+            // 根据配置文件获取 Executor
+            Executor executor = this.configuration.newExecutor(tx, execType);
+            // 生成SqlSession
+            var8 = new DefaultSqlSession(this.configuration, executor, autoCommit);
+
+    执行SQL入口: SqlSession --> DefaultSqlSession#selectList  --> SimpleExecutor#doQuery 方法执行如下：
+        // 获取 mybatis配置
+        Configuration configuration = ms.getConfiguration();
+        // 根据 RoutingStatementHandler + StatementType 获取  StatementHandler
+        StatementHandler handler = configuration.newStatementHandler(this.wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+        // 调用 ParamentHandler 进行参数类型的转换和入参【里面掉用了TypeHandler】，存在Statement 中并返回 Statement对象
+        Statement stmt = this.prepareStatement(handler, ms.getStatementLog());
+        // statement执行SQL  ResultHandler 对结果进行处理转成List【TypeHandler 转换类型】
+        List var9 = handler.query(stmt, resultHandler);
+
+    最后关闭 statment.close
+
+    详细请查看源码
+
+
+
